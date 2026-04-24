@@ -166,5 +166,70 @@ def mkWrappedObject(): Object \ IO =
     }
 \end{lstlisting}
 
-\end{document}
+\section{Effect Handler}
 
+\begin{lstlisting}
+def main(): Unit \ { Clock, Http, Logger, IO } =
+    let defaultHeaders = Map#{
+        "Accept"        => List#{"application/json"},
+        "Authorization" => List#{"Bearer tok123"}
+    };
+    run {
+        let urls = List#{"/api/users", "/api/posts"};
+        foreach (url <- urls) {
+            match Http.get(url) {
+                case Ok(resp) => println("${url} -> ${HttpResponse.status(resp)}")
+                case Err(err) => println("${url} -> ${err}")
+            }
+        };
+        match Http.get("https://notfound.flix.dev/") {
+            case Ok(resp) => println("notfound -> ${HttpResponse.status(resp)}")
+            case Err(err) => println("notfound -> ${err}")
+        }
+    } with Http.withBaseUrl("https://flix.dev")
+      with Http.withDefaultHeaders(defaultHeaders)
+      with Http.withRetry(Retry.linear(maxRetries = 2, delay = milliseconds(100)))
+      with Http.withCircuitBreaker(failureThreshold = 3, cooldown = seconds(5))
+      with Http.withSlidingWindow(maxRequests = 2, window = seconds(1))
+      with Http.withLogging
+\end{lstlisting}
+
+\section{Structs and Regions}
+
+\begin{lstlisting}
+/// A mutable struct that represents a person
+struct Person[r] {
+    name: String,
+    mut age: Int32,
+    mut height: Int32
+}
+
+mod Person {
+    /// Create a new `Person` struct with the specified name
+    pub def giveBirth(name: String, rc: Region[r]): Person[r] \ r =
+        new Person @ rc { name = name, age = 0, height = 30 }
+
+    /// Increase the age of `person` by 1 and if the age is less than 18,
+    /// increase their height by 10.
+    pub def birthday(person: Person[r]): Unit \ r =
+        person->age = person->age + 1;
+        if (person->age < 18) {
+            person->height = person->height + 10
+        } else {
+            ()
+        }
+
+    pub def printPerson(person: Person[r]): Unit \ {IO, r} =
+        println("${person->name} is ${person->age} years old and is ${person->height} cm tall")
+}
+
+def main(): Unit \ IO = region rc {
+    let joe = Person.giveBirth("Joe", rc);
+    Person.birthday(joe);
+    Person.birthday(joe);
+    Person.birthday(joe);
+    Person.printPerson(joe)
+}
+\end{lstlisting}
+
+\end{document}
