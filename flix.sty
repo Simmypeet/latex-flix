@@ -1,5 +1,5 @@
 \NeedsTeXFormat{LaTeX2e}[1994/06/01]
-\ProvidesPackage{flix}[2021/11/24 Flix]
+\ProvidesPackage{flix}[2026/04/24 Flix]
 
 \RequirePackage{listings}
 \RequirePackage{xcolor}
@@ -18,6 +18,7 @@
   commentstyle      = \color{comment-color},
   identifierstyle   = \color{black},
   stringstyle       = \color{string-color},
+  sensitive         = true,
   emph              = [1]{Unit, Bool, Char, Float32, Float64, Int8, Int16, Int32, Int64, String},
   emphstyle         = [1]{\color{type-color}},
   showspaces        = false,
@@ -30,6 +31,7 @@
   morestring        = [b]",
   morestring        = [b]',
   morestring        = [b]""",
+  otherkeywords     = {Array\#, List\#, Map\#, Set\#, Vector\#, choose*},
   morekeywords      = {
     alias,
     and,
@@ -39,14 +41,11 @@
     checked_cast,
     checked_ecast,
     choose,
-    choose*,
-    dbg,
-    dbg!,
-    dbg!!,
     def,
     discard,
     eff,
     else,
+    ematch,
     enum,
     false,
     fix,
@@ -78,7 +77,9 @@
     or,
     override,
     par,
+    pquery,
     project,
+    psolve,
     pub,
     query,
     redef,
@@ -96,21 +97,20 @@
     static,
     Static,
     struct,
+    super,
     throw,
     trait,
     true,
     try,
     type,
-    typematch,
     unchecked_cast,
     Univ,
     unsafe,
-    unsafely,
     use,
     where,
     with,
-    without,
     xor,
+    xvar,
     yield
   },
 }
